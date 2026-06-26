@@ -24,7 +24,7 @@
     formspree: "",
     submit: function(payload){
       if(window.console) console.log("[Bud] aanvraag", payload);
-      var endpoint = BUD_CONFIG.formspree;
+      var endpoint = (window.BUD_FORMSPREE || BUD_CONFIG.formspree);
       if(!endpoint) return;                 // nog niet ingesteld → niets versturen
       var body = { _subject: "Sterrenchefs aanvraag — " + payload.type, Type: payload.type };
       Object.keys(payload.data).forEach(function(k){
