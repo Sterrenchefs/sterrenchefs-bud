@@ -212,6 +212,15 @@
                  .map(function(x){return {label:x};});
   var MEDIA = ["Krant","Magazine","TV","Radio","Online / blog","Podcast","Iets anders"]
                  .map(function(x){return {label:x};});
+  var MEDIA_PH = {
+    "Krant":"Bijvoorbeeld: Het Nieuwsblad",
+    "Magazine":"Bijvoorbeeld: Libelle",
+    "TV":"Bijvoorbeeld: Focus-WTV",
+    "Radio":"Bijvoorbeeld: Radio 2",
+    "Online / blog":"Bijvoorbeeld: BRUZZ",
+    "Podcast":"Bijvoorbeeld: De Mutti's",
+    "Iets anders":"Schrijf hier uw medium"
+  };
   var COLLAB = ["Content","Collab","Sponsoring","Event","Product","Iets anders"]
                  .map(function(x){return {label:x};});
   var TRADITIE = ["Streekgerecht","Ambacht","Generaties-oude zaak","Specialiteit","Iets anders"]
@@ -229,7 +238,7 @@
      --------------------------------------------------------------- */
   async function flowRecept(){
     data = {};
-    await bud("Wat mooi dat je een dierbare met ons wil delen. 💛 Ik stel je zo een paar korte vraagjes en je mag gerust je tijd nemen.");
+    await bud("Wat mooi dat je een dierbare met ons wil delen. ❤️");
     await bud("Om te beginnen, wat is de naam van je Sterrenchef?");
     data["Naam Sterrenchef"] = await askText({placeholder:"Bv. Dorine"});
     await bud("En wie was " + data["Naam Sterrenchef"] + " voor jou?");
@@ -238,90 +247,88 @@
     data["Gerecht"] = await askText({placeholder:"Bv. pannenkoeken"});
     await bud("Heerlijk. Wat voor gerecht is het?");
     data["Type gerecht"] = await askChoice(TYPE_GERECHT);
-    await bud("Top. Het recept en de foto's vragen we je zo dadelijk rustig per mail, dan kan je dat thuis op je gemak doorsturen.");
-    await bud("Voor je gaat, vragen we nog even je toestemming. Mogen we je gegevens en het verhaal en recept van " + data["Naam Sterrenchef"] + " gebruiken, en mogen we je contacteren om alles op de website te publiceren?");
+    await bud("Top. Het recept en de foto's vragen we je zo dadelijk rustig per mail, dan kan je dat thuis rustig invullen en doorsturen.");
+    await bud("Voor je gaat, mogen we nog even je toestemming? Mag Sterrenchefs persoonlijk contact met je opnemen om een profiel voor " + data["Naam Sterrenchef"] + " aan te maken op de website?");
     data["Toestemming"] = (await askConsent()) ? "Ja" : "Nee";
-    await bud("Dankjewel. Wat is je naam?");
-    data["Naam indiener"] = await askText({placeholder:"Je naam"});
-    await bud("En op welk e-mailadres en telefoonnummer mogen we je bereiken?");
-    data["E-mail"] = await askText({placeholder:"jij@voorbeeld.be", type:"email"});
-    data["Telefoon"] = await askText({placeholder:"Telefoonnummer", type:"tel", optional:true});
+    await bud("Dankjewel! Wat is uw naam?");
+    data["Naam indiener"] = await askText({placeholder:"Naam & Voornaam"});
+    await bud("Op welk e-mailadres en telefoonnummer mogen we je bereiken?");
+    data["E-mail"] = await askText({placeholder:"Uw emailadres", type:"email"});
+    data["Telefoon"] = await askText({placeholder:"uw telefoonnummer", type:"tel", optional:true});
+    var chefNaam = data["Naam Sterrenchef"];
     finish("Sterrenchef / recept");
-    await bud("Het recept en de foto's van " + data["Naam Sterrenchef"] + " hoef je nu niet uit te typen. Je krijgt zo meteen een mailtje waarin je alles rustig kan doorsturen wanneer het jou uitkomt.");
-    await bud("Ondertussen gaan wij achter de schermen al aan de slag. Bedankt om dit mooie verhaal met ons te delen. 💛");
-    await again();
+    await bud("Het recept van " + chefNaam + " hoef je hier niet uit te typen. U krijgt zodadelijk een e-mail van Sterrenchefs (kijk ook zeker uw spamfolder na) waarin u alles rustig kan invullen en doorsturen wanneer u er klaar voor bent. Ondertussen gaan wij bij Sterrenchefs achter de schermen al aan de slag met het profiel van " + chefNaam + ", en zodra wij uw e-mail ontvangen nemen wij zo spoedig mogelijk persoonlijk contact met u op.");
+    await again("Kunnen we op dit moment u nog ergens mee helpen?");
   }
 
   async function flowHoreca(){
     data = {};
-    await bud("Leuk dat je je zaak wil voorstellen! 🏠 We zetten graag Belgische horecazaken met een verhaal in de kijker. Wat is de naam van je zaak?");
-    data["Naam zaak"] = await askText({placeholder:"Naam van je zaak"});
+    await bud("Leuk dat je uw horecazaak aan ons wil voorstellen! 🏠");
+    await bud("Wat is de naam van uw zaak?");
+    data["Naam zaak"] = await askText({placeholder:"Naam van uw zaak"});
     await bud("In welke provincie ligt " + data["Naam zaak"] + "?");
     data["Provincie"] = await askChoice(PROVINCIES);
     await bud("Wat voor zaak is het?");
     data["Type zaak"] = await askChoice(TYPE_ZAAK);
-    await bud("Dit zijn onze pakketten om je zaak in de kijker te zetten. De prijs bespreken we daarna even persoonlijk met je.<br><br><strong>Pakket 1</strong> · artikel met foto's op website, Facebook en Instagram<br><strong>Pakket 2</strong> · Pakket 1 + 2 weken uitgelicht op de homepage<br><strong>Pakket 3</strong> · Pakket 2 + videoreel op FB, IG en TikTok<br><strong>Pakket 4</strong> · Pakket 2 + videoreeks van 2 tot 4 reels<br><strong>Op maat</strong> · samen op maat van je zaak");
-    await bud("Welk pakket spreekt je het meeste aan?");
-    data["Interesse pakket"] = await askChoice(PAKKETTEN);
-    await bud("Top. Het verhaal van je zaak bespreken we graag persoonlijk. Mag ik eerst je naam?");
-    data["Contactpersoon"] = await askText({placeholder:"Je naam"});
-    await bud("En op welk e-mailadres en telefoonnummer mogen we je bereiken?");
-    data["E-mail"] = await askText({placeholder:"jij@voorbeeld.be", type:"email"});
-    data["Telefoon"] = await askText({placeholder:"Telefoonnummer", type:"tel", optional:true});
+    await bud("Wat is uw naam?");
+    data["Contactpersoon"] = await askText({placeholder:"uw naam & voornaam"});
+    await bud("Op welk e-mailadres en telefoonnummer mogen we je bereiken?");
+    data["E-mail"] = await askText({placeholder:"Uw emailadres", type:"email"});
+    data["Telefoon"] = await askText({placeholder:"uw telefoonnummer", type:"tel", optional:true});
+    var naamZaak = data["Naam zaak"];
     finish("Horecazaak aanmelden");
-    await bud("Ons team neemt binnenkort persoonlijk contact met je op om het verhaal van je zaak en de mogelijkheden samen te bespreken.");
-    await bud("Bedankt om " + data["Naam zaak"] + " aan te melden, tot snel! 💛");
-    await again();
+    await bud("Ons team neemt binnenkort persoonlijk contact met jullie op om het verhaal van " + naamZaak + " te publiceren en de mogelijkheden samen te bespreken.");
+    await bud("Hartelijk dank en tot snel! ❤️");
+    await again("Kunnen we u nog ergens mee helpen?");
   }
 
   async function flowPers(){
     data = {};
-    await bud("Fijn dat je Sterrenchefs in de kijker wil zetten! 📰 Voor welk soort medium werk je?");
+    await bud("Fijn dat je Sterrenchefs in de kijker wil zetten! 📰 Voor welk soort medium wilt u de persmap aanvragen?");
     data["Medium"] = await askChoice(MEDIA);
-    await bud("Voor welk programma, welke zender of welk medium?");
-    data["Medium / titel"] = await askText({placeholder:"Naam van het medium"});
-    await bud("Wat zou je van ons nodig hebben? Je mag meerdere dingen aanduiden.");
+    await bud("Voor welk bedrijf?");
+    data["Medium / titel"] = await askText({placeholder: MEDIA_PH[data["Medium"]] || "Naam van het medium"});
+    await bud("Wat zou je graag ontvangen? Je mag zeker meerdere zaken aanduiden.");
     data["Gewenst materiaal"] = (await askMulti(["Beeldmateriaal","Interview","Cijfers / info","Quote","Logo's","Iets anders"], "Klaar")).join(", ");
-    await bud("Genoteerd. Mag ik je naam?");
-    data["Naam"] = await askText({placeholder:"Je naam"});
-    await bud("En op welk e-mailadres mogen we je bereiken?");
-    data["E-mail"] = await askText({placeholder:"jij@voorbeeld.be", type:"email"});
+    await bud("Top! Mogen wij uw naam & voornaam?");
+    data["Naam"] = await askText({placeholder:"Uw naam & voornaam"});
+    await bud("Op welk e-mailadres mogen wij u bereiken?");
+    data["E-mail"] = await askText({placeholder:"Uw emailadres", type:"email"});
     finish("Persmap aanvraag");
-    await bud("Top. Ik geef je aanvraag meteen door en we bezorgen je het materiaal op maat, zo snel mogelijk. Bedankt voor je interesse in Sterrenchefs! 💛");
+    await bud("Succesvol verstuurd! Wij bezorgen u zo snel mogelijk alle benodigdheden. Hartelijk dank! ❤️");
     await again();
   }
 
   async function flowCollab(){
     data = {};
-    await bud("Leuk dat je met Sterrenchefs wil samenwerken! 🤝 Bij ons is alles bespreekbaar. Wat voor samenwerking heb je voor ogen?");
+    await bud("Leuk dat u graag met Sterrenchefs wil samenwerken! 🤝 Wat voor samenwerking heeft u voor ogen?");
     data["Type samenwerking"] = await askChoice(COLLAB);
-    await bud("Vertel eens kort: wat is je idee?");
-    data["Idee"] = await askText({placeholder:"Beschrijf je idee", multiline:true});
-    await bud("Met wie spreken we, en van welke organisatie?");
-    data["Naam"] = await askText({placeholder:"Naam"});
-    data["Organisatie"] = await askText({placeholder:"Organisatie / bedrijf", optional:true});
-    await bud("En op welk e-mailadres mogen we je bereiken?");
-    data["E-mail"] = await askText({placeholder:"jij@voorbeeld.be", type:"email"});
+    await bud("Vertel even in het kort uw idee:");
+    data["Idee"] = await askText({placeholder:"Beschrijf uw ideale samenwerking", multiline:true});
+    await bud("Wat is uw naam en voornaam?");
+    data["Naam"] = await askText({placeholder:"Uw naam & voornaam"});
+    await bud("Wat is de naam van uw bedrijf of organisatie?");
+    data["Organisatie"] = await askText({placeholder:"Bijvoorbeeld: Lotus Bakeries"});
+    await bud("Op welk e-mailadres mogen wij u bereiken?");
+    data["E-mail"] = await askText({placeholder:"Uw emailadres", type:"email"});
     finish("Samenwerking");
-    await bud("Spannend idee, bedankt! 🙌 Ik bezorg je voorstel aan het team. We bekijken hoe we kunnen samenwerken en nemen contact met je op.");
+    await bud("Top, bedankt! 🙌 Wij bezorgen het voorstel aan het team van Sterrenchefs en nemen zo spoedig mogelijk contact met jullie op!");
     await again();
   }
 
   async function flowAdres(){
     data = {};
-    await bud("Wat leuk dat je een adres wil delen, daar houden we van! 🌍 Wat is de naam van de zaak?");
+    await bud("Wat leuk dat je een interessant adres wil delen met ons! 🌍 Wat is de naam van de zaak?");
     data["Naam zaak"] = await askText({placeholder:"Naam van de zaak"});
-    await bud("En waar ligt het? Geef gerust de stad en het land mee (mag ook in België zijn).");
-    data["Locatie"] = await askText({placeholder:"Stad, land"});
-    await bud("Wat maakt het zo bijzonder?");
+    await bud("Waar is deze zaak gevestigd? Geef het adres, stad/gemeente en het land mee (mag ook in België zijn).");
+    data["Locatie"] = await askText({placeholder:"Bijvoorbeeld: Cielito Lindo in Los Angeles"});
+    await bud("Wat maakt deze zaak zo bijzonder?");
     data["Soort"] = await askChoice(TRADITIE);
-    await bud("Wil je kort vertellen waarom we dit zeker moeten kennen?");
-    data["Waarom"] = await askText({placeholder:"Jouw verhaal of band ermee", multiline:true});
-    await bud("Mag ik nog je naam en e-mailadres, voor als we er meer over willen weten? Dat mag je ook overslaan.");
-    data["Naam"] = await askText({placeholder:"Je naam", optional:true});
-    data["E-mail"] = await askText({placeholder:"jij@voorbeeld.be", type:"email", optional:true});
+    await bud("Beschrijf in het kort wat we daar zeker moeten proeven?");
+    data["Waarom"] = await askText({placeholder:"Bijvoorbeeld: \"Heerlijke taquitos die nog steeds met de hand worden gerold sinds 1934\"", multiline:true});
+    var naamZaak = data["Naam zaak"];
     finish("Culinair adres / tip");
-    await bud("Bedankt voor de tip! 🙏 We noteren " + data["Naam zaak"] + " en ons team bekijkt het.");
+    await bud("Bedankt voor de tip! 🙏 We noteren " + naamZaak + "!");
     await again();
   }
 
@@ -329,7 +336,7 @@
   var FAQ = {
     "Wat is een Sterrenchef?": "De beste kok of kokkin die jij ooit gekend hebt, een diploma is niet nodig. Het is iemand die herinnerd wordt door wat hij of zij op tafel bracht. 🌟",
     "Hoe dien ik iemand in?": "Heel eenvoudig: kies in het menu 'Een Sterrenchef indienen'. Ik vraag je dan een paar zaken en daarna halen we het recept en de foto's rustig op via mail.",
-    "Is het gratis?": "Een Sterrenchef / recept indienen is volledig gratis. 💛 Enkel voor horecazaken werken we met pakketten."
+    "Is het gratis?": "Een Sterrenchef / recept indienen is volledig gratis. ❤️ Enkel voor horecazaken werken we met pakketten."
   };
   async function flowVraag(){
     await bud("Natuurlijk, stel gerust je vraag. Je kan ook meteen een van deze populaire vragen kiezen:");
@@ -342,7 +349,7 @@
       await bud("Op welk e-mailadres mogen we je het antwoord bezorgen?");
       data["E-mail"] = await askText({placeholder:"jij@voorbeeld.be", type:"email"});
       finish("Algemene vraag");
-      await bud("Bedankt! Ik geef je vraag door en iemand van het team bezorgt je zo snel mogelijk een antwoord via mail. 💛");
+      await bud("Bedankt! Ik geef je vraag door en iemand van het team bezorgt je zo snel mogelijk een antwoord via mail. ❤️");
     } else {
       await bud(FAQ[pick]);
     }
@@ -367,14 +374,14 @@
     startFlow(MENU[choice].run);
   }
 
-  async function again(){
-    await bud("Kan ik je nog ergens mee helpen?");
+  async function again(prompt){
+    await bud(prompt || "Kan ik je nog ergens mee helpen?");
     var pick = await askChoice([
       {label:"Ja, terug naar het menu", value:"menu", style:"solid"},
       {label:"Nee, bedankt", value:"no", style:"ghost"}
     ]);
     if(pick === "menu") await showMenu(false);
-    else { await bud("Graag gedaan, tot een volgende keer! 💛 Je kan ons ook altijd mailen op " + BUD_CONFIG.email + "."); clearFoot(); }
+    else { await bud("Graag gedaan, tot een volgende keer! ❤️ Je kan ons ook altijd mailen op " + BUD_CONFIG.email + "."); clearFoot(); }
   }
 
   /* ---------------------------------------------------------------
