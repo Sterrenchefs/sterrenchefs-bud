@@ -26,7 +26,15 @@
       if(window.console) console.log("[Bud] aanvraag", payload);
       var endpoint = (window.BUD_FORMSPREE || BUD_CONFIG.formspree);
       if(!endpoint) return;                 // nog niet ingesteld → niets versturen
-      var body = { _subject: "Sterrenchefs aanvraag — " + payload.type, Type: payload.type };
+      try{
+        var now = Date.now();
+        var last = +(sessionStorage.getItem("budLastSubmit") || 0);
+        var count = +(sessionStorage.getItem("budSubmitCount") || 0);
+        if(now - last < 20000 || count >= 5) return;   // rate limit: bots & dubbelkliks
+        sessionStorage.setItem("budLastSubmit", String(now));
+        sessionStorage.setItem("budSubmitCount", String(count + 1));
+      }catch(e){}
+      var body = { _subject: "Sterrenchefs aanvraag — " + payload.type, Type: payload.type, _gotcha: "" };
       Object.keys(payload.data).forEach(function(k){
         if(payload.data[k] !== undefined && payload.data[k] !== "") body[k] = payload.data[k];
       });
@@ -58,7 +66,7 @@
   function pushMsg(text, who){
     var el = document.createElement("div");
     el.className = "bud-msg " + who;
-    el.innerHTML = text;
+    if(who === "user"){ el.textContent = text; } else { el.innerHTML = text; }
     log.appendChild(el);
     scrollDown();
     requestAnimationFrame(function(){ el.classList.add("in"); });
@@ -145,10 +153,17 @@
       if(!opts.multiline) field.type = opts.type || "text";
       if(opts.multiline) field.rows = 2;
       field.placeholder = opts.placeholder || "Typ hier…";
+      field.maxLength = opts.multiline ? 2000 : 320;
       var send = document.createElement("button");
       send.type = "submit"; send.className = "bud-send"; send.innerHTML = "→";
       send.setAttribute("aria-label","Versturen");
       form.appendChild(field); form.appendChild(send);
+      if(opts.type === "email"){
+        var avg = document.createElement("p");
+        avg.className = "bud-hint";
+        avg.textContent = "We gebruiken je gegevens alleen om je aanvraag te behandelen.";
+        foot.appendChild(avg);
+      }
       form.onsubmit = function(e){
         e.preventDefault();
         var v = field.value.trim();
