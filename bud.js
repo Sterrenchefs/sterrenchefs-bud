@@ -27,7 +27,7 @@
       if(window.console) console.log("[Bud] aanvraag", payload);
       var endpoint = (window.BUD_FORMSPREE || BUD_CONFIG.formspree);
       if(!endpoint){                        // nog niet ingesteld → niets versturen
-        if(window.console) console.warn("[Bud] geen Formspree-endpoint ingesteld — aanvraag niet verstuurd");
+        if(window.console) console.warn("[Bud] geen Formspree-endpoint ingesteld, aanvraag niet verstuurd");
         return Promise.resolve(true);
       }
       try{
@@ -38,7 +38,7 @@
         sessionStorage.setItem("budLastSubmit", String(now));
         sessionStorage.setItem("budSubmitCount", String(count + 1));
       }catch(e){}
-      var body = { _subject: "Sterrenchefs aanvraag — " + payload.type, Type: payload.type, _gotcha: "" };
+      var body = { _subject: "Sterrenchefs aanvraag: " + payload.type, Type: payload.type, _gotcha: "" };
       Object.keys(payload.data).forEach(function(k){
         if(payload.data[k] !== undefined && payload.data[k] !== "") body[k] = payload.data[k];
       });
@@ -51,10 +51,10 @@
         if(res.ok) return true;
         // Niet-ok (bv. 403): lees de reden uit het antwoord en log ze, zodat de oorzaak zichtbaar is.
         return res.text().then(function(txt){
-          if(window.console) console.error("[Bud] verzenden mislukt — HTTP " + res.status + ": " + txt);
+          if(window.console) console.error("[Bud] verzenden mislukt, HTTP " + res.status + ": " + txt);
           return false;
         }, function(){
-          if(window.console) console.error("[Bud] verzenden mislukt — HTTP " + res.status);
+          if(window.console) console.error("[Bud] verzenden mislukt, HTTP " + res.status);
           return false;
         });
       }, function(err){
@@ -232,7 +232,7 @@
      --------------------------------------------------------------- */
   var RELATIES = ["Ouder","Grootouder","Partner","Broer of zus","Familielid","Vriend(in)","Buur","Collega","Iemand anders"]
                  .map(function(x){return {label:x};});
-  var TYPE_GERECHT = ["Ontbijt","Lunch","Voorgerecht","Soep","Tapas","Snack","Hoofdgerecht","Dessert","Drank"]
+  var TYPE_GERECHT = ["Ontbijt","Lunch","Voorgerecht","Soep","Tapas","Snack","Hoofdgerecht","Dessert","Drank","Iets anders"]
                  .map(function(x){return {label:x};});
   var PROVINCIES = ["West-Vlaanderen","Oost-Vlaanderen","Antwerpen","Limburg","Vlaams-Brabant","Brussel","Waals-Brabant","Henegouwen","Luik","Luxemburg"]
                  .map(function(x){return {label:x};});
@@ -262,9 +262,9 @@
     data = {};
     return BUD_CONFIG.submit(payload);   // Promise<boolean>: true = ok, false = mislukt
   }
-  // Eerlijke foutmelding met directe mail-terugval als een aanvraag niet verzonden raakt
+  // Foutmelding bij een mislukte verzending, met het mailadres als vangnet
   function budFail(){
-    return bud("Oei, er ging iets mis bij het verzenden van je aanvraag. 😟 Probeer het zo dadelijk nog eens, of mail ons rechtstreeks op <a href=\"mailto:" + BUD_CONFIG.email + "\">" + BUD_CONFIG.email + "</a>, dan pikken we het zeker op.");
+    return bud("Oeps, er is iets verkeerd gelopen. Probeer het later opnieuw! Je kan ons ook rechtstreeks mailen op <a href=\"mailto:" + BUD_CONFIG.email + "\">" + BUD_CONFIG.email + "</a>.");
   }
 
   /* ---------------------------------------------------------------
@@ -273,24 +273,26 @@
   async function flowRecept(){
     data = {};
     await bud("Wat mooi dat je een dierbare met ons wil delen. ❤️");
-    await bud("Om te beginnen, wat is de naam van je Sterrenchef?");
-    data["Naam Sterrenchef"] = await askText({placeholder:"Bv. Dorine"});
+    await bud("Om te beginnen, mogen wij de naam van uw Sterrenchef?");
+    data["Naam Sterrenchef"] = await askText({placeholder:"Bijvoorbeeld: Jacqueline Vandevoorde"});
     await bud("En wie was " + data["Naam Sterrenchef"] + " voor jou?");
     data["Relatie"] = await askChoice(RELATIES);
     await bud("Dankjewel. Welk gerecht van " + data["Naam Sterrenchef"] + " wil je delen?");
     data["Gerecht"] = await askText({placeholder:"Bv. pannenkoeken"});
-    await bud("Heerlijk. Wat voor gerecht is het?");
-    data["Type gerecht"] = await askChoice(TYPE_GERECHT);
+    await bud("Heerlijk, wat voor gerecht is het? Past het bij meerdere, kies er dan gerust meerdere (bijvoorbeeld voorgerecht én hoofdgerecht).");
+    data["Type gerecht"] = (await askMulti(TYPE_GERECHT.map(function(o){ return o.label; }), "Klaar")).join(", ");
     await bud("Top. Het recept en de foto's vragen we je zo dadelijk rustig per mail, dan kan je dat thuis rustig invullen en doorsturen.");
     await bud("Voor je gaat, mogen we nog even je toestemming? Mag Sterrenchefs persoonlijk contact met je opnemen om een profiel voor " + data["Naam Sterrenchef"] + " aan te maken op de website?");
     data["Toestemming"] = (await askConsent()) ? "Ja" : "Nee";
-    await bud("Dankjewel! Wat is uw naam?");
+    await bud("Dankjewel! Mogen wij uw naam en voornaam?");
     data["Naam indiener"] = await askText({placeholder:"Naam & Voornaam"});
-    await bud("Op welk e-mailadres en telefoonnummer mogen we je bereiken?");
+    await bud("Mogen wij uw emailadres?");
     data["E-mail"] = await askText({placeholder:"Uw emailadres", type:"email"});
-    data["Telefoon"] = await askText({placeholder:"uw telefoonnummer", type:"tel", optional:true});
+    await bud("En mogen wij ook uw telefoonnummer?");
+    data["Telefoon"] = await askText({placeholder:"Uw telefoonnummer", type:"tel", optional:true});
     var chefNaam = data["Naam Sterrenchef"];
     if(await finish("Sterrenchef / recept")){
+      await bud("Succesvol verstuurd! Dankjewel. ❤️");
       await bud("Het recept van " + chefNaam + " hoef je hier niet uit te typen. U krijgt zodadelijk een e-mail van Sterrenchefs (kijk ook zeker uw spamfolder na) waarin u alles rustig kan invullen en doorsturen wanneer u er klaar voor bent. Ondertussen gaan wij bij Sterrenchefs achter de schermen al aan de slag met het profiel van " + chefNaam + ", en zodra wij uw e-mail ontvangen nemen wij zo spoedig mogelijk persoonlijk contact met u op.");
     } else { await budFail(); }
     await again("Kunnen we op dit moment u nog ergens mee helpen?");
@@ -305,15 +307,16 @@
     data["Provincie"] = await askChoice(PROVINCIES);
     await bud("Wat voor zaak is het?");
     data["Type zaak"] = await askChoice(TYPE_ZAAK);
-    await bud("Wat is uw naam?");
-    data["Contactpersoon"] = await askText({placeholder:"uw naam & voornaam"});
-    await bud("Op welk e-mailadres en telefoonnummer mogen we je bereiken?");
+    await bud("Mogen wij uw naam en voornaam?");
+    data["Contactpersoon"] = await askText({placeholder:"Naam & Voornaam"});
+    await bud("Mogen wij uw emailadres?");
     data["E-mail"] = await askText({placeholder:"Uw emailadres", type:"email"});
-    data["Telefoon"] = await askText({placeholder:"uw telefoonnummer", type:"tel", optional:true});
+    await bud("En mogen wij ook uw telefoonnummer?");
+    data["Telefoon"] = await askText({placeholder:"Uw telefoonnummer", type:"tel", optional:true});
     var naamZaak = data["Naam zaak"];
     if(await finish("Horecazaak aanmelden")){
+      await bud("Succesvol verstuurd! Dankjewel. ❤️");
       await bud("Ons team neemt binnenkort persoonlijk contact met jullie op om het verhaal van " + naamZaak + " te publiceren en de mogelijkheden samen te bespreken.");
-      await bud("Hartelijk dank en tot snel! ❤️");
     } else { await budFail(); }
     await again("Kunnen we u nog ergens mee helpen?");
   }
@@ -331,7 +334,8 @@
     await bud("Op welk e-mailadres mogen wij u bereiken?");
     data["E-mail"] = await askText({placeholder:"Uw emailadres", type:"email"});
     if(await finish("Persmap aanvraag")){
-      await bud("Succesvol verstuurd! Wij bezorgen u zo snel mogelijk alle benodigdheden. Hartelijk dank! ❤️");
+      await bud("Succesvol verstuurd! Dankjewel. ❤️");
+      await bud("Wij bezorgen u zo snel mogelijk alle benodigdheden.");
     } else { await budFail(); }
     await again();
   }
@@ -349,7 +353,8 @@
     await bud("Op welk e-mailadres mogen wij u bereiken?");
     data["E-mail"] = await askText({placeholder:"Uw emailadres", type:"email"});
     if(await finish("Samenwerking")){
-      await bud("Top, bedankt! 🙌 Wij bezorgen het voorstel aan het team van Sterrenchefs en nemen zo spoedig mogelijk contact met jullie op!");
+      await bud("Succesvol verstuurd! Dankjewel. 🙌");
+      await bud("Wij bezorgen het voorstel aan het team van Sterrenchefs en nemen zo spoedig mogelijk contact met jullie op!");
     } else { await budFail(); }
     await again();
   }
@@ -366,7 +371,8 @@
     data["Waarom"] = await askText({placeholder:"Bijvoorbeeld: \"Heerlijke taquitos die nog steeds met de hand worden gerold sinds 1934\"", multiline:true});
     var naamZaak = data["Naam zaak"];
     if(await finish("Culinair adres / tip")){
-      await bud("Bedankt voor de tip! 🙏 We noteren " + naamZaak + "!");
+      await bud("Succesvol verstuurd! Dankjewel. 🙏");
+      await bud("We noteren " + naamZaak + "!");
     } else { await budFail(); }
     await again();
   }
@@ -388,7 +394,8 @@
       await bud("Op welk e-mailadres mogen we je het antwoord bezorgen?");
       data["E-mail"] = await askText({placeholder:"jij@voorbeeld.be", type:"email"});
       if(await finish("Algemene vraag")){
-        await bud("Bedankt! Ik geef je vraag door en iemand van het team bezorgt je zo snel mogelijk een antwoord via mail. ❤️");
+        await bud("Succesvol verstuurd! Dankjewel. ❤️");
+        await bud("Ik geef je vraag door en iemand van het team bezorgt je zo snel mogelijk een antwoord via mail.");
       } else { await budFail(); }
     } else {
       await bud(FAQ[pick]);
