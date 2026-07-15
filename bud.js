@@ -285,8 +285,7 @@
     data["Gerecht"] = await askText({placeholder:"Bv. pannenkoeken"});
     await bud("Heerlijk, wat voor gerecht is het? Past het bij meerdere, kies er dan gerust meerdere (bijvoorbeeld voorgerecht én hoofdgerecht).");
     data["Type gerecht"] = (await askMulti(TYPE_GERECHT.map(function(o){ return o.label; }), "Klaar")).join(", ");
-    await bud("Top. Het recept en de foto's vragen we je zo dadelijk rustig per mail, dan kan je dat thuis rustig invullen en doorsturen.");
-    await bud("Voor je gaat, mogen we nog even je toestemming? Mag Sterrenchefs persoonlijk contact met je opnemen om een profiel voor " + data["Naam Sterrenchef"] + " aan te maken op de website?");
+    await bud("Mag Sterrenchefs persoonlijk contact met je opnemen om een profiel voor " + data["Naam Sterrenchef"] + " aan te maken op de website?");
     data["Toestemming"] = (await askConsent()) ? "Ja" : "Nee";
     await bud("Dankjewel! Mogen wij uw naam en voornaam?");
     data["Naam indiener"] = await askText({placeholder:"Naam & Voornaam"});
