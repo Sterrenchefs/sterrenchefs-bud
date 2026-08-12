@@ -82,6 +82,10 @@
   function scrollDown(){ log.scrollTop = log.scrollHeight; }
   function clearFoot(){ foot.innerHTML = ""; }
 
+  // Ontsmet door de bezoeker getypte tekst voor ze in een bot-bericht (innerHTML) belandt.
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); }
+
   function pushMsg(text, who){
     var el = document.createElement("div");
     el.className = "bud-msg " + who;
@@ -279,13 +283,13 @@
     await bud("Wat mooi dat je een dierbare met ons wil delen. ❤️");
     await bud("Om te beginnen, mogen wij de naam van uw Sterrenchef?");
     data["Naam Sterrenchef"] = await askText({placeholder:"Bijvoorbeeld: Jacqueline Vandevoorde"});
-    await bud("En wie was " + data["Naam Sterrenchef"] + " voor jou?");
+    await bud("En wie was " + esc(data["Naam Sterrenchef"]) + " voor jou?");
     data["Relatie"] = await askChoice(RELATIES);
-    await bud("Dankjewel. Welk gerecht van " + data["Naam Sterrenchef"] + " wil je delen?");
+    await bud("Dankjewel. Welk gerecht van " + esc(data["Naam Sterrenchef"]) + " wil je delen?");
     data["Gerecht"] = await askText({placeholder:"Bv. pannenkoeken"});
     await bud("Heerlijk, wat voor gerecht is het? Past het bij meerdere, kies er dan gerust meerdere (bijvoorbeeld voorgerecht én hoofdgerecht).");
     data["Type gerecht"] = (await askMulti(TYPE_GERECHT.map(function(o){ return o.label; }), "Klaar")).join(", ");
-    await bud("Mag Sterrenchefs persoonlijk contact met je opnemen om een profiel voor " + data["Naam Sterrenchef"] + " aan te maken op de website?");
+    await bud("Mag Sterrenchefs persoonlijk contact met je opnemen om een profiel voor " + esc(data["Naam Sterrenchef"]) + " aan te maken op de website?");
     data["Toestemming"] = (await askConsent()) ? "Ja" : "Nee";
     await bud("Dankjewel! Mogen wij uw naam en voornaam?");
     data["Naam indiener"] = await askText({placeholder:"Naam & Voornaam"});
@@ -296,7 +300,7 @@
     var chefNaam = data["Naam Sterrenchef"];
     if(await finish("Sterrenchef / recept")){
       await bud("Succesvol verstuurd! Dankjewel. ❤️");
-      await bud("Het recept van " + chefNaam + " hoef je hier niet uit te typen. U krijgt zodadelijk een e-mail van Sterrenchefs (kijk ook zeker uw spamfolder na) waarin u alles rustig kan invullen en doorsturen wanneer u er klaar voor bent. Ondertussen gaan wij bij Sterrenchefs achter de schermen al aan de slag met het profiel van " + chefNaam + ", en zodra wij uw e-mail ontvangen nemen wij zo spoedig mogelijk persoonlijk contact met u op.");
+      await bud("Het recept van " + esc(chefNaam) + " hoef je hier niet uit te typen. U krijgt zodadelijk een e-mail van Sterrenchefs (kijk ook zeker uw spamfolder na) waarin u alles rustig kan invullen en doorsturen wanneer u er klaar voor bent. Ondertussen gaan wij bij Sterrenchefs achter de schermen al aan de slag met het profiel van " + esc(chefNaam) + ", en zodra wij uw e-mail ontvangen nemen wij zo spoedig mogelijk persoonlijk contact met u op.");
     } else { await budFail(); }
     await again("Kunnen we op dit moment u nog ergens mee helpen?");
   }
@@ -306,7 +310,7 @@
     await bud("Leuk dat je uw horecazaak aan ons wil voorstellen! 🏠");
     await bud("Wat is de naam van uw zaak?");
     data["Naam zaak"] = await askText({placeholder:"Naam van uw zaak"});
-    await bud("In welke provincie ligt " + data["Naam zaak"] + "?");
+    await bud("In welke provincie ligt " + esc(data["Naam zaak"]) + "?");
     data["Provincie"] = await askChoice(PROVINCIES);
     await bud("Wat voor zaak is het?");
     data["Type zaak"] = await askChoice(TYPE_ZAAK);
@@ -319,7 +323,7 @@
     var naamZaak = data["Naam zaak"];
     if(await finish("Horecazaak aanmelden")){
       await bud("Succesvol verstuurd! Dankjewel. ❤️");
-      await bud("Ons team neemt binnenkort persoonlijk contact met jullie op om het verhaal van " + naamZaak + " te publiceren en de mogelijkheden samen te bespreken.");
+      await bud("Ons team neemt binnenkort persoonlijk contact met jullie op om het verhaal van " + esc(naamZaak) + " te publiceren en de mogelijkheden samen te bespreken.");
     } else { await budFail(); }
     await again("Kunnen we u nog ergens mee helpen?");
   }
@@ -375,7 +379,7 @@
     var naamZaak = data["Naam zaak"];
     if(await finish("Culinair adres / tip")){
       await bud("Succesvol verstuurd! Dankjewel. 🙏");
-      await bud("We noteren " + naamZaak + "!");
+      await bud("We noteren " + esc(naamZaak) + "!");
     } else { await budFail(); }
     await again();
   }
